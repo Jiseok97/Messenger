@@ -99,12 +99,10 @@
 		B651CB4E26EB06C700F5F90F /* Messenger */ = {
 			isa = PBXGroup;
 			children = (
-				B651CB4F26EB06C700F5F90F /* AppDelegate.swift */,
-				B651CB5126EB06C700F5F90F /* SceneDelegate.swift */,
-				B651CB5326EB06C700F5F90F /* ViewController.swift */,
-				B651CB5526EB06C700F5F90F /* Main.storyboard */,
-				B651CB5826EB06C800F5F90F /* Assets.xcassets */,
-				B651CB5A26EB06C800F5F90F /* LaunchScreen.storyboard */,
+				B651CB8226EB08F000F5F90F /* Resources */,
+				B651CB8126EB08EB00F5F90F /* Models */,
+				B651CB8026EB08E500F5F90F /* Views */,
+				B651CB7F26EB08DD00F5F90F /* Controllers */,
 				B651CB5D26EB06C800F5F90F /* Info.plist */,
 			);
 			path = Messenger;
@@ -126,6 +124,48 @@
 				B651CB7326EB06C800F5F90F /* Info.plist */,
 			);
 			path = MessengerUITests;
+			sourceTree = "<group>";
+		};
+		B651CB7F26EB08DD00F5F90F /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				B651CB5326EB06C700F5F90F /* ViewController.swift */,
+			);
+			path = Controllers;
+			sourceTree = "<group>";
+		};
+		B651CB8026EB08E500F5F90F /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B651CB5826EB06C800F5F90F /* Assets.xcassets */,
+				B651CB8326EB091B00F5F90F /* Storyboards */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B651CB8126EB08EB00F5F90F /* Models */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B651CB8226EB08F000F5F90F /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B651CB4F26EB06C700F5F90F /* AppDelegate.swift */,
+				B651CB5126EB06C700F5F90F /* SceneDelegate.swift */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		B651CB8326EB091B00F5F90F /* Storyboards */ = {
+			isa = PBXGroup;
+			children = (
+				B651CB5526EB06C700F5F90F /* Main.storyboard */,
+				B651CB5A26EB06C800F5F90F /* LaunchScreen.storyboard */,
+			);
+			path = Storyboards;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

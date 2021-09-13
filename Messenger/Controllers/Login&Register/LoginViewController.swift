@@ -114,21 +114,25 @@ class LoginViewController: UIViewController {
         emailField.frame = CGRect(x: 30,
                                  y: imageView.bottom + 60,
                                  width: scrollView.width - 60,
-                                 height: 52)
+                                 height: 47)
         
         passwordField.frame = CGRect(x: 30,
                                     y: emailField.bottom + 10,
                                     width: scrollView.width - 60,
-                                    height: 52)
+                                    height: 47)
         
         loginBtn.frame = CGRect(x: 30,
-                               y: passwordField.bottom + 10,
+                               y: passwordField.bottom + 23,
                                width: scrollView.width - 60,
-                               height: 52)
+                               height: 47)
     }
     
     
     @objc private func loginBtnTapped() {
+        // resignFirstResponder → 키보드 숨기기
+        emailField.resignFirstResponder()
+        passwordField.resignFirstResponder()
+        
         guard let email = emailField.text, let password = passwordField.text,
               !email.isEmpty, !password.isEmpty, password.count >= 6 else {
             alertUserLoginError()

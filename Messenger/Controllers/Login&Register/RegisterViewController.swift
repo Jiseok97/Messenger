@@ -18,9 +18,48 @@ class RegisterViewController: UIViewController {
 
     private let imageView : UIImageView = {
        let imgView = UIImageView()
-        imgView.image = UIImage(named: "logo")
+        imgView.image = UIImage(systemName: "person")
+        imgView.tintColor = .gray
         imgView.contentMode = .scaleAspectFit
         return imgView
+    }()
+    
+    private let firstNameField : UITextField = {
+       let field = UITextField()
+        field.autocapitalizationType = .none   // 자동 대문자 X
+        field.autocorrectionType = .no   // 자동 수정 X
+        field.returnKeyType = .continue   // 다음으로 넘어갈 수 있게 (PW TF)
+        field.layer.cornerRadius = 12
+        field.layer.borderWidth = 1
+        field.layer.borderColor = UIColor.lightGray.cgColor
+        field.placeholder = "성 입력..."
+        
+        field.clearButtonMode = .always
+        field.clearButtonMode = .whileEditing
+        
+        field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 7, height: 0))
+        field.leftViewMode = .always
+        field.backgroundColor = .white
+        return field
+    }()
+    
+    private let lastNameField : UITextField = {
+       let field = UITextField()
+        field.autocapitalizationType = .none   // 자동 대문자 X
+        field.autocorrectionType = .no   // 자동 수정 X
+        field.returnKeyType = .continue   // 다음으로 넘어갈 수 있게 (PW TF)
+        field.layer.cornerRadius = 12
+        field.layer.borderWidth = 1
+        field.layer.borderColor = UIColor.lightGray.cgColor
+        field.placeholder = "이름 입력..."
+        
+        field.clearButtonMode = .always
+        field.clearButtonMode = .whileEditing
+        
+        field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 7, height: 0))
+        field.leftViewMode = .always
+        field.backgroundColor = .white
+        return field
     }()
     
     private let emailField : UITextField = {
@@ -64,10 +103,10 @@ class RegisterViewController: UIViewController {
         return field
     }()
     
-    private let loginBtn : UIButton = {
+    private let registerBtn : UIButton = {
         let btn = UIButton()
-        btn.setTitle("로그인", for: .normal)
-        btn.backgroundColor = .link
+        btn.setTitle("회원가입", for: .normal)
+        btn.backgroundColor = .systemGreen
         btn.setTitleColor(.white, for: .normal)
         btn.layer.cornerRadius = 12
         btn.layer.masksToBounds = true
@@ -82,23 +121,37 @@ class RegisterViewController: UIViewController {
         setUI()
     }
     func setUI() {
-        title = "로그인"
+        title = "회원가입"
         view.backgroundColor = .white
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "회원가입",
                                                             style: .done,
                                                             target: self,
                                                             action: #selector(didTapRegister))
         
-        loginBtn.addTarget(self, action: #selector(loginBtnTapped), for: .touchUpInside)
+        registerBtn.addTarget(self, action: #selector(registerBtnTapped), for: .touchUpInside)
         
         emailField.delegate = self
         passwordField.delegate = self
         
         view.addSubview(scrollView)
         scrollView.addSubview(imageView)
+        scrollView.addSubview(firstNameField)
+        scrollView.addSubview(lastNameField)
         scrollView.addSubview(emailField)
         scrollView.addSubview(passwordField)
-        scrollView.addSubview(loginBtn)
+        scrollView.addSubview(registerBtn)
+        
+        // 사용자 상호작용 
+        imageView.isUserInteractionEnabled = true
+        scrollView.isUserInteractionEnabled = true
+        
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(didTapChangeProfile))
+        
+        imageView.addGestureRecognizer(gesture)
+    }
+    
+    @objc private func didTapChangeProfile() {
+        print("프로필 사진 클릭")
     }
     
     // MARK: width & height .. etc Extensions 정의
@@ -111,26 +164,50 @@ class RegisterViewController: UIViewController {
                                 width: size,
                                 height: size)
         
-        emailField.frame = CGRect(x: 30,
-                                 y: imageView.bottom + 60,
+        firstNameField.frame = CGRect(x: 30,
+                                 y: imageView.bottom + 35,
                                  width: scrollView.width - 60,
-                                 height: 52)
+                                 height: 47)
+        
+        lastNameField.frame = CGRect(x: 30,
+                                 y: firstNameField.bottom + 10,
+                                 width: scrollView.width - 60,
+                                 height: 47)
+        
+        emailField.frame = CGRect(x: 30,
+                                 y: lastNameField.bottom + 10,
+                                 width: scrollView.width - 60,
+                                 height: 47)
         
         passwordField.frame = CGRect(x: 30,
                                     y: emailField.bottom + 10,
                                     width: scrollView.width - 60,
-                                    height: 52)
+                                    height: 47)
         
-        loginBtn.frame = CGRect(x: 30,
-                               y: passwordField.bottom + 10,
+        registerBtn.frame = CGRect(x: 30,
+                               y: passwordField.bottom + 23,
                                width: scrollView.width - 60,
-                               height: 52)
+                               height: 47)
     }
     
     
-    @objc private func loginBtnTapped() {
-        guard let email = emailField.text, let password = passwordField.text,
-              !email.isEmpty, !password.isEmpty, password.count >= 6 else {
+    @objc private func registerBtnTapped() {
+        
+        firstNameField.resignFirstResponder()
+        lastNameField.resignFirstResponder()
+        emailField.resignFirstResponder()
+        passwordField.resignFirstResponder()
+        
+        // 유효성 검사
+        guard let firstName = firstNameField.text,
+              let lastName = lastNameField.text,
+              let email = emailField.text,
+              let password = passwordField.text,
+              !firstName.isEmpty,
+              !lastName.isEmpty,
+              !email.isEmpty,
+              !password.isEmpty,
+              password.count >= 6 else {
             alertUserLoginError()
             return
         }
@@ -139,10 +216,10 @@ class RegisterViewController: UIViewController {
     }
     
     func alertUserLoginError() {
-        let alert = UIAlertController(title: "로그인 실패",
-                                     message: "이메일, 패스워드를 다시 확인하여 주세요",
+        let alert = UIAlertController(title: "회원가입 실패",
+                                     message: "회원정보를 다시 확인하여 주세요",
                                      preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Dismiss",
+        alert.addAction(UIAlertAction(title: "확인",
                                       style: .cancel,
                                       handler: nil))
         present(alert, animated: true)
@@ -164,7 +241,7 @@ extension RegisterViewController : UITextFieldDelegate {
             // 이메일에서 비밀번호 TF로 포커스 될 수 있도록
             passwordField.becomeFirstResponder()
         } else if textField == passwordField {
-            loginBtnTapped()
+            registerBtnTapped()
         }
         
         return true

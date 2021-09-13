@@ -141,7 +141,7 @@ class RegisterViewController: UIViewController {
         scrollView.addSubview(passwordField)
         scrollView.addSubview(registerBtn)
         
-        // 사용자 상호작용 
+        // 사용자 상호작용
         imageView.isUserInteractionEnabled = true
         scrollView.isUserInteractionEnabled = true
         
@@ -150,8 +150,11 @@ class RegisterViewController: UIViewController {
         imageView.addGestureRecognizer(gesture)
     }
     
+    
+    // MARK: 프로필 이미지 클릭(이미지 변경)
+    // Info 권한 추가
     @objc private func didTapChangeProfile() {
-        print("프로필 사진 클릭")
+        presentPhotoActionSheet()   // delegate func
     }
     
     // MARK: width & height .. etc Extensions 정의
@@ -245,5 +248,37 @@ extension RegisterViewController : UITextFieldDelegate {
         }
         
         return true
+    }
+}
+
+
+extension RegisterViewController : UIImagePickerControllerDelegate {
+    
+    func presentPhotoActionSheet() {
+        let actionSheet = UIAlertController(title: "프로필 사진",
+                                           message: "프로필 사진을 수정하시겠습니까?",
+                                           preferredStyle: .actionSheet)
+        actionSheet.addAction(UIAlertAction(title: "확인",
+                                           style: .cancel,
+                                           handler: nil))
+        actionSheet.addAction(UIAlertAction(title: "사진 찍기",
+                                           style: .default,
+                                           handler: { _ in
+                                            
+                                           }))
+        actionSheet.addAction(UIAlertAction(title: "사진 선택",
+                                           style: .default,
+                                           handler: { _ in
+                                            
+                                           }))
+        
+        present(actionSheet, animated: true)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        
+    }
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        
     }
 }

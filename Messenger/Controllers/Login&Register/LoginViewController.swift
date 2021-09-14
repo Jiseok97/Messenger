@@ -107,7 +107,7 @@ class LoginViewController: UIViewController {
         scrollView.frame = view.bounds
         let size = scrollView.width / 3
         imageView.frame = CGRect(x: (scrollView.width - size) / 2,
-                                y: 80,
+                                y: 60,
                                 width: size,
                                 height: size)
         

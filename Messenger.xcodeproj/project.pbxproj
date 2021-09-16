@@ -10,6 +10,7 @@
 		4C260B44BE153B3B8B5AC8BF /* Pods_MessengerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9D2FB8A6664960992042F15 /* Pods_MessengerTests.framework */; };
 		9903D43E4BF1D7558E5C45EF /* Pods_Messenger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F96FB855C96513E30397EF23 /* Pods_Messenger.framework */; };
 		B609F45826F0E91C00B536B3 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B609F45726F0E91C00B536B3 /* GoogleService-Info.plist */; };
+		B61CB63226F3181500F2A981 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61CB63126F3181500F2A981 /* DatabaseManager.swift */; };
 		B620068F26EB220900CDF52F /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B620068E26EB220900CDF52F /* LoginViewController.swift */; };
 		B620069126EB221800CDF52F /* RegisterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B620069026EB221800CDF52F /* RegisterViewController.swift */; };
 		B620069326EB223E00CDF52F /* PhotoViewerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B620069226EB223E00CDF52F /* PhotoViewerViewController.swift */; };
@@ -54,6 +55,7 @@
 		A9D2FB8A6664960992042F15 /* Pods_MessengerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MessengerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9F5829697C173FBC6C72261 /* Pods-Messenger-MessengerUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Messenger-MessengerUITests.debug.xcconfig"; path = "Target Support Files/Pods-Messenger-MessengerUITests/Pods-Messenger-MessengerUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		B609F45726F0E91C00B536B3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B61CB63126F3181500F2A981 /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
 		B620068E26EB220900CDF52F /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		B620069026EB221800CDF52F /* RegisterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterViewController.swift; sourceTree = "<group>"; };
 		B620069226EB223E00CDF52F /* PhotoViewerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViewerViewController.swift; sourceTree = "<group>"; };
@@ -186,8 +188,8 @@
 		B651CB7F26EB08DD00F5F90F /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				B6F331A026EB75860028DBB3 /* Login&Register */,
 				B651CB5326EB06C700F5F90F /* ConversationViewController.swift */,
+				B6F331A026EB75860028DBB3 /* Login&Register */,
 				B620069226EB223E00CDF52F /* PhotoViewerViewController.swift */,
 				B620069426EB224A00CDF52F /* VideoPlayerViewController.swift */,
 				B620069626EB226700CDF52F /* NewConversationViewController.swift */,
@@ -218,6 +220,7 @@
 				B651CB4F26EB06C700F5F90F /* AppDelegate.swift */,
 				B651CB5126EB06C700F5F90F /* SceneDelegate.swift */,
 				B6F331A126EB791A0028DBB3 /* Extensions.swift */,
+				B61CB63126F3181500F2A981 /* DatabaseManager.swift */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -480,6 +483,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B620068F26EB220900CDF52F /* LoginViewController.swift in Sources */,
+				B61CB63226F3181500F2A981 /* DatabaseManager.swift in Sources */,
 				B620069126EB221800CDF52F /* RegisterViewController.swift in Sources */,
 				B620069726EB226700CDF52F /* NewConversationViewController.swift in Sources */,
 				B651CB5426EB06C700F5F90F /* ConversationViewController.swift in Sources */,

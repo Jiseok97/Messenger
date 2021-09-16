@@ -113,7 +113,7 @@ class LoginViewController: UIViewController {
                                 height: size)
         
         emailField.frame = CGRect(x: 30,
-                                 y: imageView.bottom + 60,
+                                 y: imageView.bottom + 30,
                                  width: scrollView.width - 60,
                                  height: 47)
         
@@ -140,7 +140,10 @@ class LoginViewController: UIViewController {
             return
         }
         // MARK: Firebase 로그인
-        FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password, completion: { authResult, error in
+        FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password, completion: { [weak self] authResult, error in
+            guard let strongSelf = self else {
+                return
+            }
             guard let result = authResult, error == nil else {
                 // 로그인 실패
                 print("로그인 실패 \(email)")
@@ -149,7 +152,7 @@ class LoginViewController: UIViewController {
             // 로그인 성공
             let user = result.user
             print("로그인 성공: \(user)")
-            
+            strongSelf.navigationController?.dismiss(animated: true, completion: nil)
         })
         
     }

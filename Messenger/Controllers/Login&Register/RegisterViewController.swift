@@ -19,7 +19,7 @@ class RegisterViewController: UIViewController {
 
     private let imageView : UIImageView = {
        let imgView = UIImageView()
-        imgView.image = UIImage(systemName: "person")
+        imgView.image = UIImage(systemName: "person.circle")
         imgView.tintColor = .gray
         imgView.contentMode = .scaleAspectFit
         imgView.layer.masksToBounds = true   // imageView 둥글게 할 때 이미지 자르기
@@ -166,15 +166,15 @@ class RegisterViewController: UIViewController {
         super.viewDidLayoutSubviews()
         scrollView.frame = view.bounds
         let size = scrollView.width / 3
-        imageView.frame = CGRect(x: (scrollView.width - size) / 2 - 5,
-                                y: 60,
-                                width: size + 20,
-                                height: size + 20)
+        imageView.frame = CGRect(x: (scrollView.width - size) / 2 - 22,
+                                y: 40,
+                                width: size + 50,
+                                height: size + 50)
         
         imageView.layer.cornerRadius = imageView.width / 2.0
         
         firstNameField.frame = CGRect(x: 30,
-                                 y: imageView.bottom + 35,
+                                 y: imageView.bottom + 20,
                                  width: scrollView.width - 60,
                                  height: 47)
         
@@ -222,21 +222,33 @@ class RegisterViewController: UIViewController {
         }
         // Firebase 회원가입
         
-        FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: { authResult, error in
-            guard let result = authResult, error == nil else {
-                print("회원가입 에러 발생")
+        DatabaseManager.shared.userExists(with: email, completion: { [weak self] exists in
+            guard let strongSelf = self else {
                 return
             }
-            let user = result.user
-            print("유저 생성: \(user)")
+            guard !exists else {
+                // 사용자가 이미 존재함
+                strongSelf.alertUserLoginError(message: "입력하신 이메일은 이미 사용중인 이메일입니다.")
+                return
+            }
             
+            FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: { authResult, error in
+                guard authResult != nil, error == nil else {
+                    print("회원가입 에러 발생")
+                    return
+                }
+                DatabaseManager.shared.insertUser(with: ChatAppUser(firstName: firstName,
+                                                                  lastName: lastName,
+                                                                  emailAddress: email))
+                
+                strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+            })
         })
-        
     }
     
-    func alertUserLoginError() {
+    func alertUserLoginError(message: String = "회원정보를 다시 확인하여 주세요") {
         let alert = UIAlertController(title: "회원가입 실패",
-                                     message: "회원정보를 다시 확인하여 주세요",
+                                     message: message,
                                      preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "확인",
                                       style: .cancel,

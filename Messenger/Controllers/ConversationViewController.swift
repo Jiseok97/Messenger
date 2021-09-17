@@ -12,7 +12,6 @@ class ConversationViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .link
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -22,6 +21,7 @@ class ConversationViewController: UIViewController {
     }
 
     private func validateAuth() {
+        // Auth.auth().currentUser → 현재 로그인한 사용자
         if FirebaseAuth.Auth.auth().currentUser == nil {
             let vc = LoginViewController()
             let nav = UINavigationController(rootViewController: vc)

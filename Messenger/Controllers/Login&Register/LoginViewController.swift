@@ -223,20 +223,71 @@ extension LoginViewController : LoginButtonDelegate {
             print("페이스북 로그인을 실패하였습니다.")
             return
         }
-        // 자격 증명을 얻기 위한 ...
-        let credential = FacebookAuthProvider.credential(withAccessToken: token)
         
-        FirebaseAuth.Auth.auth().signIn(with: credential, completion: { [weak self] authResult, error in
-            guard let strongSelf = self else {
+        // Firebase 데이터 시각화를 위함, FB 엑세스 토큰전까지
+        let fbRequest = FBSDKLoginKit.GraphRequest(graphPath: "Me",
+                                                  parameters: ["fields": "email, name"],
+                                                  tokenString: token,
+                                                  version: nil,
+                                                  httpMethod: .get)
+        
+        // 해당 이메일 및 이름을 가져오기 위함
+        fbRequest.start(completion: { _, result, error in
+            guard let result = result as? [String: Any],
+                      error == nil else {
+                print("페이스북 그래프 요청에 실패하였습니다.")
                 return
             }
-            guard authResult != nil, error == nil else {
-                print("페이스북 로그인 실패, MFA가 필요합니다.")
+            // return(result) => User Name, User Id, User Email
+            print("result => \(result)")
+            // result => 딕셔너리[Key]
+            guard let userName = result["name"] as? String,
+                  let email = result["email"] as? String else {
+                print("유저의 이름 및 이메일 가져오기를 페이스북 로그인에서 실패였습니다.")
+                
                 return
             }
             
-            strongSelf.navigationController?.dismiss(animated: true, completion: nil)
-            print("페이스북 로그인 성공하셨습니다.")
+            
+            // 이름이 영어일 경우, 나눠서 firstName, LastName 설정
+            // 추후, 이름변수 하나로 통합 할 예정
+//            let nameComponents = userName.components(separatedBy: " ")
+//            guard nameComponents.count == 2 else {
+//                return
+//            }
+//
+//            let firstName = nameComponents[0]
+//            let lastName = nameComponents[1]
+
+            
+            // 같은 이름 및 이메일이 존재하지 않으면 DB에 유저 정보 넣어주기 ! (중복 검사)
+            DatabaseManager.shared.userExists(with: email, completion: { exists in
+                if !exists {
+                    DatabaseManager.shared.insertUser(with: ChatAppUser(firstName: userName,
+                                                                      lastName: "",
+                                                                      emailAddress: email))
+                }
+            })
+            
+            
+            
+            // 페이스북 엑세스 토큰을 교환하여 Firebase 자격 증명을 얻기 !!
+            let credential = FacebookAuthProvider.credential(withAccessToken: token)
+            
+            FirebaseAuth.Auth.auth().signIn(with: credential, completion: { [weak self] authResult, error in
+                // 메모리 누수때문에 weak self 사용
+                guard let strongSelf = self else {
+                    return
+                }
+                guard authResult != nil, error == nil else {
+                    // Firebase에 사용 설정하면 됨 !!
+                    print("페이스북 로그인 실패, MFA가 필요합니다.")
+                    return
+                }
+                
+                strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+                print("페이스북 로그인 성공하셨습니다.")
+            })
         })
         
     }

@@ -45,15 +45,33 @@ extension ProfileViewController : UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
-        do {
-            try FirebaseAuth.Auth.auth().signOut()
-            
-            let vc = LoginViewController()
-            let nav = UINavigationController(rootViewController: vc)
-            nav.modalPresentationStyle = .fullScreen
-            present(nav, animated: false)
-        } catch {
-            print("로그아웃 실패")
-        }
+        let actionSheet = UIAlertController(title: "로그아웃",
+                                           message: "로그아웃을 하시겠습니까?",
+                                           preferredStyle: .actionSheet)
+        // style: destructive => 작업이 데이터를 변경하거나 삭제할 수 있음을 나타내는 스타일
+        actionSheet.addAction(UIAlertAction(title: "로그아웃",
+                                            style: .destructive,
+                                            handler: { [weak self] _ in
+                                                guard let strongSelf = self else {
+                                                    return
+                                                }
+                                                // MARK: 로그아웃
+                                                do {
+                                                    try FirebaseAuth.Auth.auth().signOut()
+                                                    
+                                                    let vc = LoginViewController()
+                                                    let nav = UINavigationController(rootViewController: vc)
+                                                    nav.modalPresentationStyle = .fullScreen
+                                                    strongSelf.present(nav, animated: true)
+                                                } catch {
+                                                    print("로그아웃 실패")
+                                                }
+                                                
+                                            }))
+        actionSheet.addAction(UIAlertAction(title: "취소",
+                                            style: .cancel,
+                                            handler: nil))
+        
+        present(actionSheet, animated: true)
     }
 }

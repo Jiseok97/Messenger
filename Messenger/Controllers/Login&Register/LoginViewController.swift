@@ -7,9 +7,10 @@
 
 import UIKit
 import FirebaseAuth
+import FBSDKLoginKit
 
 class LoginViewController: UIViewController {
-    
+    // MARK: View 선언
     private let scrollView : UIScrollView = {
        let scrollView = UIScrollView()
         scrollView.clipsToBounds = true
@@ -76,12 +77,23 @@ class LoginViewController: UIViewController {
         return btn
     }()
     
+    private let fbLoginButton : FBLoginButton = {
+        let button = FBLoginButton()
+        // 권한 저장
+        button.permissions = ["email", "public_profile"]
+        
+        return button
+    }()
+    
+    
+    
     // MARK: viewDidLoad()
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setUI()
     }
+    // MARK: SetUI()
     func setUI() {
         title = "로그인"
         view.backgroundColor = .white
@@ -91,18 +103,21 @@ class LoginViewController: UIViewController {
                                                             action: #selector(didTapRegister))
         
         loginBtn.addTarget(self, action: #selector(loginBtnTapped), for: .touchUpInside)
+        fbLoginButton.layer.cornerRadius = 12
         
         emailField.delegate = self
         passwordField.delegate = self
+        fbLoginButton.delegate = self
         
         view.addSubview(scrollView)
         scrollView.addSubview(imageView)
         scrollView.addSubview(emailField)
         scrollView.addSubview(passwordField)
         scrollView.addSubview(loginBtn)
+        scrollView.addSubview(fbLoginButton)
     }
     
-    // MARK: width & height .. etc Extensions 정의
+    // MARK: View Frame
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         scrollView.frame = view.bounds
@@ -126,9 +141,15 @@ class LoginViewController: UIViewController {
                                y: passwordField.bottom + 23,
                                width: scrollView.width - 60,
                                height: 47)
+        
+        fbLoginButton.frame = CGRect(x: 30,
+                               y: loginBtn.bottom + 12,
+                               width: scrollView.width - 60,
+                               height: 40)
     }
     
     
+    // MAKR: 일반 로그인 버튼 Action
     @objc private func loginBtnTapped() {
         // resignFirstResponder → 키보드 숨기기
         emailField.resignFirstResponder()
@@ -157,6 +178,7 @@ class LoginViewController: UIViewController {
         
     }
     
+    // MARK: 로그인 실패 시
     func alertUserLoginError() {
         let alert = UIAlertController(title: "로그인 실패",
                                      message: "이메일 혹은 비밀번호를 다시 확인해주세요",
@@ -167,6 +189,8 @@ class LoginViewController: UIViewController {
         present(alert, animated: true)
     }
     
+    
+    // MARK: 회원가입 버튼 및 이동
     @objc private func didTapRegister() {
         let vc = RegisterViewController()
         vc.title = "Create Account"
@@ -187,5 +211,38 @@ extension LoginViewController : UITextFieldDelegate {
         }
         
         return true
+    }
+}
+
+
+// MARK: 페이스북 로그인 기능
+extension LoginViewController : LoginButtonDelegate {
+    func loginButton(_ loginButton: FBLoginButton, didCompleteWith result: LoginManagerLoginResult?, error: Error?) {
+        // LoginManagerLoginResult 반환은 클래스반환, 토큰 반환
+        guard let token = result?.token?.tokenString else {
+            print("페이스북 로그인을 실패하였습니다.")
+            return
+        }
+        // 자격 증명을 얻기 위한 ...
+        let credential = FacebookAuthProvider.credential(withAccessToken: token)
+        
+        FirebaseAuth.Auth.auth().signIn(with: credential, completion: { [weak self] authResult, error in
+            guard let strongSelf = self else {
+                return
+            }
+            guard authResult != nil, error == nil else {
+                print("페이스북 로그인 실패, MFA가 필요합니다.")
+                return
+            }
+            
+            strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+            print("페이스북 로그인 성공하셨습니다.")
+        })
+        
+    }
+    
+    // FB 유저가 로그인 한 것을 감지하면 로그인 버튼을 자동으로 로그아웃 버튼으로 표시하도록 버튼이 업데이트 됨
+    func loginButtonDidLogOut(_ loginButton: FBLoginButton) {
+        // 필요 없을듯 !
     }
 }

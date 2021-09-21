@@ -8,6 +8,7 @@
 import UIKit
 import FirebaseAuth
 import FBSDKLoginKit
+import GoogleSignIn
 
 class LoginViewController: UIViewController {
     // MARK: View 선언
@@ -85,6 +86,7 @@ class LoginViewController: UIViewController {
         return button
     }()
     
+    private let googleLogInButton = GIDSignInButton()
     
     
     // MARK: viewDidLoad()
@@ -115,6 +117,7 @@ class LoginViewController: UIViewController {
         scrollView.addSubview(passwordField)
         scrollView.addSubview(loginBtn)
         scrollView.addSubview(fbLoginButton)
+        scrollView.addSubview(googleLogInButton)
     }
     
     // MARK: View Frame
@@ -146,6 +149,11 @@ class LoginViewController: UIViewController {
                                y: loginBtn.bottom + 12,
                                width: scrollView.width - 60,
                                height: 40)
+        
+        googleLogInButton.frame = CGRect(x: 30,
+                                         y: fbLoginButton.bottom + 12,
+                                         width: scrollView.width - 60,
+                                         height: 40)
     }
     
     
@@ -258,7 +266,6 @@ extension LoginViewController : LoginButtonDelegate {
 //
 //            let firstName = nameComponents[0]
 //            let lastName = nameComponents[1]
-
             
             // 같은 이름 및 이메일이 존재하지 않으면 DB에 유저 정보 넣어주기 ! (중복 검사)
             DatabaseManager.shared.userExists(with: email, completion: { exists in

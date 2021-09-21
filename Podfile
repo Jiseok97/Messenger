@@ -12,13 +12,7 @@ target 'Messenger' do
 # Facebook Login
   pod 'FBSDKLoginKit'
 
-  target 'MessengerTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
-
-  target 'MessengerUITests' do
-    # Pods for testing
-  end
+# Google Login
+  pod 'GoogleSignIn'
 
 end

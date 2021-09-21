@@ -8,6 +8,9 @@
 import UIKit
 import Firebase
 import FBSDKCoreKit
+import GoogleSignIn
+import GoogleUtilities
+
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -17,12 +20,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         
+        // Firebase
         FirebaseApp.configure()
         
         ApplicationDelegate.shared.application(
             application,
             didFinishLaunchingWithOptions: launchOptions
         )
+        
+        // Google SignIn → FirebaseApp.configure() 선언 후 하기
+        let clientID = FirebaseApp.app()?.options.clientID!
+        let gSigninConfig = GIDConfiguration.init(clientID: clientID!)
+        
 
         return true
     }
@@ -39,6 +48,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             sourceApplication: options[UIApplication.OpenURLOptionsKey.sourceApplication] as? String,
             annotation: options[UIApplication.OpenURLOptionsKey.annotation]
         )
+        
+        return GIDSignIn.sharedInstance.handle(url)
     }
+    
+    
 }
     

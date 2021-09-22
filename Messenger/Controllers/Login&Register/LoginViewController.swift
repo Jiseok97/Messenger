@@ -91,12 +91,18 @@ class LoginViewController: UIViewController {
     }()
     
     private let googleLogInButton = GIDSignInButton()
-    
+    private var loginObserver : NSObjectProtocol?
     
     // MARK: viewDidLoad()
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        loginObserver = NotificationCenter.default.addObserver(forName: .didLogInNotification, object: nil, queue: .main, using: { [weak self] _ in
+            guard let strongSelf = self else { return }
+            
+            strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+            
+        })
         setUI()
     }
     // MARK: SetUI()
@@ -162,12 +168,49 @@ class LoginViewController: UIViewController {
     }
     
     
+    deinit {
+        if let observer = loginObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+    
     // MARK: 구글 로그인 기능
     @objc private func googleLogInTapped() {
         GIDSignIn.sharedInstance.signIn(with: signInConfig, presenting: self) { user, error in
             guard error == nil else { return }
+            guard let user = user else { return }
             
-            print("구글 로그인 성공 프로필 뷰 이동")
+            guard let googleEmail = user.profile?.email,
+                  let fullName = user.profile?.name else { return }
+            
+            DatabaseManager.shared.userExists(with: googleEmail, completion: { exists in
+                if !exists {
+                    // 사요앚 정보 데이터베이스에 넣기
+                    DatabaseManager.shared.insertUser(with: ChatAppUser(firstName: fullName,
+                                                                        lastName: "",
+                                                                        emailAddress: googleEmail))
+                }
+            })
+            
+            user.authentication.do { authentication, error in
+                guard error == nil else { return }
+                guard let authentication = authentication else { return }
+                
+                let credential = GoogleAuthProvider.credential(withIDToken: authentication.idToken!,
+                                                               accessToken: authentication.accessToken)
+                
+                FirebaseAuth.Auth.auth().signIn(with: credential, completion: { authResult, error in
+                    guard authResult != nil, error == nil else {
+                        print("로그인 뷰 → 구글 로그인 실패")
+                        return
+                    }
+                    print("로그인 뷰 → 구글 로그인 성공")
+                    // 그냥 dismiss해도 되지만, Notification으로 구성해봤다..
+                    // 원래 Google Login은 AppDelegate에서 기능을 확장시켰는데 왜인지 최근에 로그인 방식이 변했다... 
+                    NotificationCenter.default.post(name: .didLogInNotification, object: nil)
+                })
+                
+            }
         }
     }
     
@@ -319,3 +362,4 @@ extension LoginViewController : LoginButtonDelegate {
         // 필요 없을듯 !
     }
 }
+

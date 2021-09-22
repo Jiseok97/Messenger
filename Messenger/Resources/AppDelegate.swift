@@ -29,8 +29,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         )
         
         // Google SignIn → FirebaseApp.configure() 선언 후 하기
-        let clientID = FirebaseApp.app()?.options.clientID!
-        let gSigninConfig = GIDConfiguration.init(clientID: clientID!)
+        GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
+            if error != nil || user == nil {
+                print("구글 로그인 실패")
+            } else {
+                print("구글 로그인 성공")
+            }
+        }
         
 
         return true

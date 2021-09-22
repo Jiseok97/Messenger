@@ -6,11 +6,15 @@
 //
 
 import UIKit
+import Firebase
 import FirebaseAuth
 import FBSDKLoginKit
 import GoogleSignIn
 
 class LoginViewController: UIViewController {
+    // 구글 클라이언트 ID
+    let signInConfig = GIDConfiguration.init(clientID: (FirebaseApp.app()?.options.clientID)!)
+    
     // MARK: View 선언
     private let scrollView : UIScrollView = {
        let scrollView = UIScrollView()
@@ -105,6 +109,7 @@ class LoginViewController: UIViewController {
                                                             action: #selector(didTapRegister))
         
         loginBtn.addTarget(self, action: #selector(loginBtnTapped), for: .touchUpInside)
+        googleLogInButton.addTarget(self, action: #selector(googleLogInTapped), for: .touchUpInside)
         fbLoginButton.layer.cornerRadius = 12
         
         emailField.delegate = self
@@ -157,7 +162,17 @@ class LoginViewController: UIViewController {
     }
     
     
-    // MAKR: 일반 로그인 버튼 Action
+    // MARK: 구글 로그인 기능
+    @objc private func googleLogInTapped() {
+        GIDSignIn.sharedInstance.signIn(with: signInConfig, presenting: self) { user, error in
+            guard error == nil else { return }
+            
+            print("구글 로그인 성공 프로필 뷰 이동")
+        }
+    }
+    
+    
+    // MARK: 일반 로그인 버튼 Action
     @objc private func loginBtnTapped() {
         // resignFirstResponder → 키보드 숨기기
         emailField.resignFirstResponder()

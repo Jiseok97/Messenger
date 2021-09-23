@@ -10,10 +10,19 @@ import FirebaseAuth
 
 class ConversationViewController: UIViewController {
 
-
+    private let tableView: UITableView = {
+       let table = UITableView()
+        table.isHidden = true
+        table.register(UITableViewCell.self,
+                      forCellReuseIdentifier: "cell")
+        
+        return table
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.addSubview(tableView)
+        setupTableView()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -30,6 +39,11 @@ class ConversationViewController: UIViewController {
             nav.modalPresentationStyle = .fullScreen
             present(nav, animated: false)
         }
+    }
+    
+    private func setupTableView() {
+        tableView.delegate = self
+        tableView.dataSource = self
     }
 }
 

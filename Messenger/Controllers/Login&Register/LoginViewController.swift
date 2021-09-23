@@ -30,6 +30,14 @@ class LoginViewController: UIViewController {
         return imgView
     }()
     
+    private let mLabel : UILabel = {
+        let lbl = UILabel()
+        lbl.text = "JS Messenger"
+        lbl.textColor = UIColor.link
+        lbl.font = UIFont.systemFont(ofSize: 23, weight: .semibold)
+        return lbl
+    }()
+    
     private let emailField : UITextField = {
        let field = UITextField()
         field.autocapitalizationType = .none   // 자동 대문자 X
@@ -97,6 +105,8 @@ class LoginViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // 원래 구글로그인을 App Delegate에서 작업했다면..
+        // 로그인이 되었다면 앱 전반에 걸친 알림과 이를 듣고 있는 옵저버(관찰자)가 필요함
         loginObserver = NotificationCenter.default.addObserver(forName: .didLogInNotification, object: nil, queue: .main, using: { [weak self] _ in
             guard let strongSelf = self else { return }
             
@@ -124,6 +134,7 @@ class LoginViewController: UIViewController {
         
         view.addSubview(scrollView)
         scrollView.addSubview(imageView)
+        scrollView.addSubview(mLabel)
         scrollView.addSubview(emailField)
         scrollView.addSubview(passwordField)
         scrollView.addSubview(loginBtn)
@@ -141,8 +152,13 @@ class LoginViewController: UIViewController {
                                 width: size,
                                 height: size)
         
+        mLabel.frame = CGRect(x: (scrollView.width - size) / 2 - 10,
+                                y: imageView.bottom + 12,
+                                width: scrollView.width - 60,
+                                height: 50)
+        
         emailField.frame = CGRect(x: 30,
-                                 y: imageView.bottom + 30,
+                                 y: mLabel.bottom + 10,
                                  width: scrollView.width - 60,
                                  height: 47)
         
@@ -152,7 +168,7 @@ class LoginViewController: UIViewController {
                                     height: 47)
         
         loginBtn.frame = CGRect(x: 30,
-                               y: passwordField.bottom + 23,
+                               y: passwordField.bottom + 16,
                                width: scrollView.width - 60,
                                height: 47)
         
@@ -206,7 +222,7 @@ class LoginViewController: UIViewController {
                     }
                     print("로그인 뷰 → 구글 로그인 성공")
                     // 그냥 dismiss해도 되지만, Notification으로 구성해봤다..
-                    // 원래 Google Login은 AppDelegate에서 기능을 확장시켰는데 왜인지 최근에 로그인 방식이 변했다... 
+                    // 원래 Google Login은 AppDelegate에서 기능을 확장시켰는데 왜인지 최근에 로그인 방식이 변했다...
                     NotificationCenter.default.post(name: .didLogInNotification, object: nil)
                 })
                 

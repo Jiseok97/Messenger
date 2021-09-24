@@ -10,8 +10,12 @@ import Firebase
 import FirebaseAuth
 import FBSDKLoginKit
 import GoogleSignIn
+import JGProgressHUD
 
 class LoginViewController: UIViewController {
+    // 인디케이터
+    private let spinner = JGProgressHUD(style: .dark)
+    
     // 구글 클라이언트 ID
     let signInConfig = GIDConfiguration.init(clientID: (FirebaseApp.app()?.options.clientID)!)
     
@@ -183,7 +187,7 @@ class LoginViewController: UIViewController {
                                          height: 40)
     }
     
-    
+    // Observer
     deinit {
         if let observer = loginObserver {
             NotificationCenter.default.removeObserver(observer)
@@ -242,11 +246,21 @@ class LoginViewController: UIViewController {
             alertUserLoginError()
             return
         }
+        
+        spinner.show(in: view)
+        
         // MARK: Firebase 로그인
         FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password, completion: { [weak self] authResult, error in
             guard let strongSelf = self else {
                 return
             }
+            
+            DispatchQueue.main.async {
+                strongSelf.spinner.dismiss()
+            }
+            
+            
+            
             guard let result = authResult, error == nil else {
                 // 로그인 실패
                 print("로그인 실패 \(email)")

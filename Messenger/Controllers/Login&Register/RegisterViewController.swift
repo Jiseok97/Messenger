@@ -7,8 +7,11 @@
 
 import UIKit
 import FirebaseAuth
+import JGProgressHUD
 
 class RegisterViewController: UIViewController {
+    // 인디케이터
+    private let spinner = JGProgressHUD(style: .dark)
 
     private let scrollView : UIScrollView = {
        let scrollView = UIScrollView()
@@ -220,12 +223,19 @@ class RegisterViewController: UIViewController {
             alertUserLoginError()
             return
         }
-        // Firebase 회원가입
         
+        spinner.show(in: view)
+        
+        // Firebase 회원가입
         DatabaseManager.shared.userExists(with: email, completion: { [weak self] exists in
             guard let strongSelf = self else {
                 return
             }
+            
+            DispatchQueue.main.async {
+                strongSelf.spinner.dismiss()
+            }
+            
             guard !exists else {
                 // 사용자가 이미 존재함
                 strongSelf.alertUserLoginError(message: "입력하신 이메일은 이미 사용중인 이메일입니다.")

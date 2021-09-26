@@ -48,6 +48,8 @@ class NewConversationViewController: UIViewController {
                                                           style: .done,
                                                           target: self,
                                                           action: #selector(dismissSelf))
+        // 키보드를 호출하는 처 번째 응답자 → searchBar
+        searchBar.becomeFirstResponder()
     }
     
     @objc private func dismissSelf() {

@@ -15,6 +15,7 @@ final class StorageManager {
     private let storage = Storage.storage().reference()
     
     /*
+     이미지 형식
       /images/js-gmail-com_profile_picture.png
      */
     

@@ -38,11 +38,19 @@ extension DatabaseManager {
     }
     
     /// Inserts new user to database
-    public func insertUser(with user: ChatAppUser) {
+    public func insertUser(with user: ChatAppUser, completion: @escaping (Bool) -> Void) {
         database.child(user.safeEmail).setValue([
             "first_name": user.firstName,
             "last_name": user.lastName
-        ])
+        ], withCompletionBlock: { error, _ in
+            guard error == nil else {
+                print("데이터 베이스를 읽는데 실패하였습니다.")
+                completion(false)
+                return
+            }
+            
+            completion(true)
+        })
     }
 }
 
@@ -57,5 +65,10 @@ struct ChatAppUser {
         var safeEmail = emailAddress.replacingOccurrences(of: ".", with: "-")
         safeEmail = safeEmail.replacingOccurrences(of: "@", with: "-")
         return safeEmail
+    }
+    
+    var profilePictureFileName: String {
+        // /images/js-gmail-com_profile_picture.png
+        return "\(safeEmail)_profile_picture.png"
     }
 }

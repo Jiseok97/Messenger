@@ -205,10 +205,37 @@ class LoginViewController: UIViewController {
             
             DatabaseManager.shared.userExists(with: googleEmail, completion: { exists in
                 if !exists {
-                    // 사요앚 정보 데이터베이스에 넣기
-                    DatabaseManager.shared.insertUser(with: ChatAppUser(firstName: fullName,
-                                                                        lastName: "",
-                                                                        emailAddress: googleEmail))
+                    // 사용자 정보 데이터베이스에 넣기
+                    let chatUser = ChatAppUser(firstName: fullName,
+                                               lastName: "",
+                                               emailAddress: googleEmail)
+                    DatabaseManager.shared.insertUser(with: chatUser, completion: { success in
+                        if success {
+                            // 사진 업로드
+                            if user.profile!.hasImage {
+                                guard let url = user.profile?.imageURL(withDimension: 200) else {
+                                    return
+                                }
+                                
+                                URLSession.shared.dataTask(with: url, completionHandler: { data, _, _ in
+                                    guard let data = data else {
+                                        return
+                                    }
+                                    let fileName = chatUser.profilePictureFileName
+                                    StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: { result in
+                                        switch result {
+                                        case .success(let downloadUrl) :
+                                            UserDefaults.standard.set(downloadUrl, forKey: "profile_picture_url")
+                                            print(downloadUrl)
+                                            
+                                        case .failure(let error):
+                                            print("이미지 저장소 관리자 에러: \(error)")
+                                        }
+                                    })
+                                }).resume()
+                            }
+                        }
+                    })
                 }
             })
             
@@ -311,7 +338,7 @@ extension LoginViewController : UITextFieldDelegate {
 }
 
 
-// MARK: 페이스북 로그인 기능
+// MARK: 페이스북 로그인 기능 & 사진
 extension LoginViewController : LoginButtonDelegate {
     func loginButton(_ loginButton: FBLoginButton, didCompleteWith result: LoginManagerLoginResult?, error: Error?) {
         // LoginManagerLoginResult 반환은 클래스반환, 토큰 반환
@@ -322,7 +349,8 @@ extension LoginViewController : LoginButtonDelegate {
         
         // Firebase 데이터 시각화를 위함, FB 엑세스 토큰전까지
         let fbRequest = FBSDKLoginKit.GraphRequest(graphPath: "Me",
-                                                  parameters: ["fields": "email, name"],
+                                                  parameters: ["fields":
+                                                                "email, name, picture.type(large)"],
                                                   tokenString: token,
                                                   version: nil,
                                                   httpMethod: .get)
@@ -335,32 +363,56 @@ extension LoginViewController : LoginButtonDelegate {
                 return
             }
             // return(result) => User Name, User Id, User Email
-            print("result => \(result)")
+            print("페이스북 reulst => \(result)")
             // result => 딕셔너리[Key]
-            guard let userName = result["name"] as? String,
-                  let email = result["email"] as? String else {
+            guard let fullName = result["name"] as? String,
+                  let email = result["email"] as? String,
+                  let picture = result["picture"] as? [String: Any],
+                  let data = picture["data"] as? [String: Any],
+                  let pictureUrl = data["url"] as? String else {
                 print("유저의 이름 및 이메일 가져오기를 페이스북 로그인에서 실패였습니다.")
                 
                 return
             }
             
-            
-            // 이름이 영어일 경우, 나눠서 firstName, LastName 설정
-            // 추후, 이름변수 하나로 통합 할 예정
-//            let nameComponents = userName.components(separatedBy: " ")
-//            guard nameComponents.count == 2 else {
-//                return
-//            }
-//
-//            let firstName = nameComponents[0]
-//            let lastName = nameComponents[1]
-            
             // 같은 이름 및 이메일이 존재하지 않으면 DB에 유저 정보 넣어주기 ! (중복 검사)
+            // MARK: 페이스북 이미지 업로드(URL)
             DatabaseManager.shared.userExists(with: email, completion: { exists in
                 if !exists {
-                    DatabaseManager.shared.insertUser(with: ChatAppUser(firstName: userName,
-                                                                      lastName: "",
-                                                                      emailAddress: email))
+                    let chatUser = ChatAppUser(firstName: fullName,
+                                               lastName: "",
+                                               emailAddress: email)
+                    DatabaseManager.shared.insertUser(with: chatUser, completion: { success in
+                        if success {
+                            // 사진 업로드
+                            guard let url = URL(string: pictureUrl) else {
+                                return
+                            }
+                            
+                            print("페이스북 사진 다운로드를 진행합니다.")
+                            
+                            URLSession.shared.dataTask(with: url, completionHandler: { data, _, _ in
+                                guard let data = data else {
+                                    print("데이터를 가져오는데 실패하였습니다. (페이스북_이미지)")
+                                    return
+                                }
+                                
+                                print("페이스북으로부터 데이터를 업로딩합니다...")
+                                
+                                let fileName = chatUser.profilePictureFileName
+                                StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: { result in
+                                    switch result {
+                                    case .success(let downloadUrl) :
+                                        UserDefaults.standard.set(downloadUrl, forKey: "profile_picture_url")
+                                        print(downloadUrl)
+                                        
+                                    case .failure(let error):
+                                        print("이미지 저장소 관리자 에러: \(error)")
+                                    }
+                                })
+                            }).resume()
+                        }
+                    })
                 }
             })
             

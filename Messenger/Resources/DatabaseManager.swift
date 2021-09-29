@@ -55,6 +55,7 @@ extension DatabaseManager {
                 completion(false)
                 return
             }
+            
             /*
              users => [
                 [
@@ -70,7 +71,19 @@ extension DatabaseManager {
             self.database.child("users").observeSingleEvent(of: .value, with: { snapshot in
                 if var usersCollection = snapshot.value as? [[String: String]] {
                     // 유저를 딕셔너리 형식으로 append
+                    let newElement = [
+                        "name": user.firstName + user.lastName,
+                        "email": user.safeEmail
+                    ]
+                    usersCollection.append(newElement)
                     
+                    self.database.child("users").setValue(usersCollection, withCompletionBlock: { error, _ in
+                        guard error == nil else {
+                            completion(false)
+                            return
+                        }
+                        completion(true)
+                    })
                 }
                 else {
                     // array 생성
@@ -83,6 +96,7 @@ extension DatabaseManager {
                     
                     self.database.child("users").setValue(newCollection, withCompletionBlock: { error, _ in
                         guard error == nil else {
+                            completion(false)
                             return
                         }
                         completion(true)
@@ -91,6 +105,21 @@ extension DatabaseManager {
             })
             completion(true)
         })
+    }
+    
+    public func getAllUsers(completion: @escaping (Result<[[String: String]], Error>) -> Void) {
+        database.child("users").observeSingleEvent(of: .value, with: { snapshot in
+            guard let value = snapshot.value as? [[String: String]] else {
+                completion(.failure(DatabaseError.failedToFetch))
+                return
+            }
+            
+            completion(.success(value))
+        })
+    }
+
+    public enum DatabaseError: Error {
+        case failedToFetch
     }
 }
 

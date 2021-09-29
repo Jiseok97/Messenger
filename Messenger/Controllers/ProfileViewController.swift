@@ -26,6 +26,10 @@ class ProfileViewController: UIViewController {
         tableView.tableHeaderView = createtableHeader()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        tableView.reloadData()
+    }
+    
     func createtableHeader() -> UIView? {
         guard let email = UserDefaults.standard.value(forKey: "email") as? String else { return nil }
         let safeEmail = DatabaseManager.safeEmail(emailAddress: email)

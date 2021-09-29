@@ -11,7 +11,14 @@ import FirebaseDatabase
 final class DatabaseManager {
     
     static let shared = DatabaseManager()
+    
     private let database = Database.database().reference()
+    
+    static func safeEmail(emailAddress: String) -> String {
+        var safeEmail = emailAddress.replacingOccurrences(of: ".", with: "-")
+        safeEmail = safeEmail.replacingOccurrences(of: "@", with: "-")
+        return safeEmail
+    }
 }
 
 // MARK: 계정 관리
@@ -48,7 +55,40 @@ extension DatabaseManager {
                 completion(false)
                 return
             }
-            
+            /*
+             users => [
+                [
+                    "name":
+                    "safe_email":
+                ],
+                [
+                    "name":
+                    "safe_email":
+                ]
+             ]
+             */
+            self.database.child("users").observeSingleEvent(of: .value, with: { snapshot in
+                if var usersCollection = snapshot.value as? [[String: String]] {
+                    // 유저를 딕셔너리 형식으로 append
+                    
+                }
+                else {
+                    // array 생성
+                    let newCollection: [[String: String]] = [
+                        [
+                            "name": user.firstName + user.lastName,
+                            "email": user.safeEmail
+                        ]
+                    ]
+                    
+                    self.database.child("users").setValue(newCollection, withCompletionBlock: { error, _ in
+                        guard error == nil else {
+                            return
+                        }
+                        completion(true)
+                    })
+                }
+            })
             completion(true)
         })
     }

@@ -203,6 +203,8 @@ class LoginViewController: UIViewController {
             guard let googleEmail = user.profile?.email,
                   let fullName = user.profile?.name else { return }
             
+            UserDefaults.standard.set(googleEmail, forKey: "email")
+            
             DatabaseManager.shared.userExists(with: googleEmail, completion: { exists in
                 if !exists {
                     // 사용자 정보 데이터베이스에 넣기
@@ -286,8 +288,6 @@ class LoginViewController: UIViewController {
                 strongSelf.spinner.dismiss()
             }
             
-            
-            
             guard let result = authResult, error == nil else {
                 // 로그인 실패
                 print("로그인 실패 \(email)")
@@ -295,6 +295,8 @@ class LoginViewController: UIViewController {
             }
             // 로그인 성공
             let user = result.user
+            UserDefaults.standard.set(email, forKey: "email")
+            
             print("로그인 성공: \(user)")
             strongSelf.navigationController?.dismiss(animated: true, completion: nil)
         })
@@ -374,6 +376,7 @@ extension LoginViewController : LoginButtonDelegate {
                 
                 return
             }
+            UserDefaults.standard.set(email, forKey: "email")
             
             // 같은 이름 및 이메일이 존재하지 않으면 DB에 유저 정보 넣어주기 ! (중복 검사)
             // MARK: 페이스북 이미지 업로드(URL)

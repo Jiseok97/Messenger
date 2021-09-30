@@ -123,6 +123,31 @@ extension DatabaseManager {
     }
 }
 
+
+// MARK: - 보내는 메세지 / 채팅
+extension DatabaseManager {
+    /// 새로운 채팅방을 만들기
+    public func createNewConversation(with otherUserEmail: String, firstMessage: String, completion: @escaping (Bool) -> Void) {
+        
+    }
+    
+    /// 이메일을 통해 해당 사용자와의 모든 대화를 반환
+    public func getAllConversations(for email: String, completion: @escaping (Result<String, Error>) -> Void) {
+        
+    }
+    
+    public func getAllMessagesForConversation(with id: String, completion: @escaping (Result<String, Error>) -> Void) {
+        
+    }
+    
+    
+    public func sendMessage(to conversation: String, message: Message) {
+        
+    }
+}
+
+
+
 struct ChatAppUser {
     let firstName: String
     let lastName: String

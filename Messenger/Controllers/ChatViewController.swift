@@ -7,6 +7,7 @@
 
 import UIKit
 import MessageKit
+import InputBarAccessoryView
 
 struct Message: MessageType {
     var sender: SenderType   // 발신자
@@ -23,30 +24,56 @@ struct Sender: SenderType {
 
 class ChatViewController: MessagesViewController {
     
+    public let otherUserEmail : String
+    public var isNewConversation = false
+    
     private var messages = [Message]()
     
     private let selfSender = Sender(photoURL: "",
                                     senderId: "1",
                                     displayName: "지석이")
-
+    
+    init(with email: String) {
+        self.otherUserEmail = email
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        messages.append(Message(sender: selfSender,
-                               messageId: "1",
-                               sentDate: Date(),
-                               kind: .text("안녕하세요 !! 반가워요 !!")))
-        
-        messages.append(Message(sender: selfSender,
-                               messageId: "1",
-                               sentDate: Date(),
-                               kind: .text("완전 반가워요 !!!")))
-        
         
         view.backgroundColor = .link
+        
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
+        messageInputBar.delegate = self
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        messageInputBar.inputTextView.becomeFirstResponder()
+    }
+}
+
+extension ChatViewController : InputBarAccessoryViewDelegate {
+    func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
+        guard !text.replacingOccurrences(of: " ", with: "").isEmpty else {
+            return
+        }
+        print("sending: \(text)")
+        
+        // 메세지 보내기
+        if isNewConversation {
+            // DB에 새 채팅 만들기
+            
+        } else {
+            // 기존 대화 데이터 추가
+            
+        }
     }
 }
 

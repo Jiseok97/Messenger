@@ -24,14 +24,26 @@ struct Sender: SenderType {
 
 class ChatViewController: MessagesViewController {
     
+    public static let dateFormatter : DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .long
+        formatter.locale = .current
+        
+        return formatter
+    }()
+    
     public let otherUserEmail : String
     public var isNewConversation = false
     
     private var messages = [Message]()
     
-    private let selfSender = Sender(photoURL: "",
-                                    senderId: "1",
-                                    displayName: "지석이")
+    private var selfSender : Sender? {
+        guard let email = UserDefaults.standard.value(forKey: "email") as? String else { return nil }
+        return Sender(photoURL: "",
+               senderId: email,
+               displayName: "지석이")
+    }
     
     init(with email: String) {
         self.otherUserEmail = email
@@ -61,27 +73,60 @@ class ChatViewController: MessagesViewController {
 
 extension ChatViewController : InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        guard !text.replacingOccurrences(of: " ", with: "").isEmpty else {
+        guard !text.replacingOccurrences(of: " ", with: "").isEmpty,
+              let selfSender = self.selfSender,
+              let messageId = createMessageId() else {
             return
+            
         }
+        
         print("sending: \(text)")
         
         // 메세지 보내기
         if isNewConversation {
             // DB에 새 채팅 만들기
+            let message = Message(sender: selfSender,
+                                  messageId: messageId,
+                                 sentDate: Date(),
+                                 kind: .text(text))
+            DatabaseManager.shared.createNewConversation(with: otherUserEmail, firstMessage: message, completion: { success in
+                if success {
+                    print("메세지 보내기 성공!")
+                } else {
+                    print("메세지 보내기 실패!")
+                }
+            })
             
         } else {
             // 기존 대화 데이터 추가
             
         }
     }
+    
+    private func createMessageId() -> String? {
+        // date, otherUserEmail, senderEmail, randomInt
+        guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") else {
+            return ""
+        }
+        let dateString = Self.dateFormatter.string(from: Date())
+        let newIdentifier = "\(otherUserEmail)_\(currentUserEmail)_\(dateString)"
+        print("메세지 ID: \(newIdentifier)")
+        
+        return newIdentifier
+    }
+    
 }
 
 
 extension ChatViewController : MessagesDataSource, MessagesLayoutDelegate, MessagesDisplayDelegate {
     // 발신자가 누구인지?
     func currentSender() -> SenderType {
-        return selfSender
+        if let sender = selfSender {
+            return sender
+        }
+        fatalError("Self Sender이 nil 값입니다.")
+        // 아래 Sender은 더미 데이터
+        return Sender(photoURL: "", senderId: "", displayName: "")
     }
     
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {

@@ -127,7 +127,7 @@ extension DatabaseManager {
 // MARK: - 보내는 메세지 / 채팅
 extension DatabaseManager {
     /// 새로운 채팅방을 만들기
-    public func createNewConversation(with otherUserEmail: String, firstMessage: String, completion: @escaping (Bool) -> Void) {
+    public func createNewConversation(with otherUserEmail: String, firstMessage: Message, completion: @escaping (Bool) -> Void) {
         
     }
     
@@ -136,12 +136,15 @@ extension DatabaseManager {
         
     }
     
-    public func getAllMessagesForConversation(with id: String, completion: @escaping (Result<String, Error>) -> Void) {
+    
+    /// 해당 채팅의 모든 메세지(채팅 내역)을 가져옴
+    public func getAllMessagesForConversation(with id: String, completion: @escaping (Result<String, Error>) -> Void){
         
     }
     
     
-    public func sendMessage(to conversation: String, message: Message) {
+    /// 상대방에게 메세지를 보내는 기능
+    public func sendMessage(to conversation: String, message: Message, completion: @escaping (Bool) -> Void) {
         
     }
 }

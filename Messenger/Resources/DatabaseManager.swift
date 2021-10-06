@@ -180,7 +180,6 @@ extension DatabaseManager {
             
             case .text(let messageText):
                 message = messageText
-                
             case .attributedText(_):
                 break
             case .photo(_):
@@ -201,8 +200,10 @@ extension DatabaseManager {
                 break
             }
             
+            let conversationId = "conversation_\(firstMessage.messageId)"
+            
             let newConversationData : [String: Any] = [
-                "id" : "conversation_\(firstMessage.messageId)",
+                "id" : conversationId,
                 "other_user_email": otherUserEmail,
                 "latest_message" : [
                     "date": dateString,
@@ -216,12 +217,14 @@ extension DatabaseManager {
                 conversations.append(newConversationData)
                 userNode["conversations"] = conversations
                 
-                ref.setValue(userNode, withCompletionBlock: { error, _ in
+                ref.setValue(userNode, withCompletionBlock: { [weak self] error, _ in
                     guard error == nil else {
                         completion(false)
                         return
                     }
-                    completion(true)
+                    self?.finishCreatingConversation(conversationID: conversationId,
+                                                   firstMessage: firstMessage,
+                                                   completion: completion)
                 })
             } else {
                 // 같은 채팅방이 존재하지 않음
@@ -229,17 +232,90 @@ extension DatabaseManager {
                     newConversationData
                 ]
                 
-                ref.setValue(userNode, withCompletionBlock: { error, _ in
+                ref.setValue(userNode, withCompletionBlock: { [weak self] error, _ in
                     guard error == nil else {
                         completion(false)
                         return
                     }
+                    
+                    self?.finishCreatingConversation(conversationID: conversationId,
+                                                   firstMessage: firstMessage,
+                                                   completion: completion)
                     completion(true)
                 })
             }
             
         })
         
+    }
+    
+    private func finishCreatingConversation(conversationID: String, firstMessage: Message, completion: @escaping (Bool) -> Void) {
+//        {
+//            "id" : String,
+//            "type" : text, photo, video,
+//            "content" : Date(),
+//            "sender_email" : String,
+//            "isRead" : true / false
+//        }
+        
+        let messageDate = firstMessage.sentDate
+        let dateString = ChatViewController.dateFormatter.string(from: messageDate)
+        
+        var message = ""
+        
+        switch firstMessage.kind {
+        
+        case .text(let messageText):
+            message = messageText
+        case .attributedText(_):
+            break
+        case .photo(_):
+            break
+        case .video(_):
+            break
+        case .location(_):
+            break
+        case .emoji(_):
+            break
+        case .audio(_):
+            break
+        case .contact(_):
+            break
+        case .linkPreview(_):
+            break
+        case .custom(_):
+            break
+        }
+        
+        guard let myEmail = UserDefaults.standard.value(forKey: "email") as? String else {
+            completion(false)
+            return
+        }
+        
+        let currentUserEmail = DatabaseManager.safeEmail(emailAddress: myEmail)
+        
+        let collectionMessage: [String: Any] = [
+            "id": firstMessage.messageId,
+            "type": firstMessage.kind.messageKindString,
+            "content": message,
+            "date": dateString,
+            "sender_email": currentUserEmail,
+            "is_read": false
+        ]
+        
+        let value : [String: Any] = [
+            "messages": [
+                collectionMessage
+            ]
+        ]
+        
+        database.child("\(conversationID)").setValue(value, withCompletionBlock: { error, _ in
+            guard error == nil else {
+                completion(false)
+                return
+            }
+            completion(true)
+        })
     }
     
     /// 이메일을 통해 해당 사용자와의 모든 대화를 반환

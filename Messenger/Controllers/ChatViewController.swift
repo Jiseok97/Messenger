@@ -16,6 +16,34 @@ struct Message: MessageType {
    public var kind: MessageKind    // 사진, 이모지, 음성메세지 등등 여러타입 존재
 }
 
+extension MessageKind {
+    var messageKindString: String {
+        switch self {
+        case .text(_):
+            return "text"
+        case .attributedText(_):
+            return "attributedText"
+        case .photo(_):
+            return "photo"
+        case .video(_):
+            return "video"
+        case .location(_):
+            return "location"
+        case .emoji(_):
+            return "emoji"
+        case .audio(_):
+            return "audio"
+        case .contact(_):
+            return "contact"
+        case .linkPreview(_):
+            return "linkPreview"
+        case .custom(_):
+            return "custom"
+            
+        }
+    }
+}
+
 struct Sender: SenderType {
    public var photoURL : String
    public var senderId: String
@@ -106,11 +134,14 @@ extension ChatViewController : InputBarAccessoryViewDelegate {
     
     private func createMessageId() -> String? {
         // date, otherUserEmail, senderEmail, randomInt
-        guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") else {
+        guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String else {
             return ""
         }
+        
+        let safeCurrentEmail = DatabaseManager.safeEmail(emailAddress: currentUserEmail)
+        
         let dateString = Self.dateFormatter.string(from: Date())
-        let newIdentifier = "\(otherUserEmail)_\(currentUserEmail)_\(dateString)"
+        let newIdentifier = "\(otherUserEmail)_\(safeCurrentEmail)_\(dateString)"
         print("메세지 ID: \(newIdentifier)")
         
         return newIdentifier

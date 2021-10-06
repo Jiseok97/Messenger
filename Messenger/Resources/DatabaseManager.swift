@@ -56,18 +56,6 @@ extension DatabaseManager {
                 return
             }
             
-            /*
-             users => [
-                [
-                    "name":
-                    "safe_email":
-                ],
-                [
-                    "name":
-                    "safe_email":
-                ]
-             ]
-             */
             self.database.child("users").observeSingleEvent(of: .value, with: { snapshot in
                 if var usersCollection = snapshot.value as? [[String: String]] {
                     // 유저를 딕셔너리 형식으로 append
@@ -123,11 +111,134 @@ extension DatabaseManager {
     }
 }
 
+/*
+ users => [
+    [
+        "name":
+        "safe_email":
+    ],
+    [
+        "name":
+        "safe_email":
+    ]
+ ]
+ */
 
 // MARK: - 보내는 메세지 / 채팅
 extension DatabaseManager {
+    
+    /*
+     // RDB에 들어가는 데이터 형식
+     
+        "UserId" {
+            "messages" : [
+                {
+                    "id" : String,
+                    "type" : text, photo, video,
+                    "content" : Date(),
+                    "sender_email" : String,
+                    "isRead" : true / false
+                }
+            ]
+        }
+     
+         conversation => [
+            [
+                "conversation_id" : "UserId
+                "other_user__email":
+                "latest_message": => {
+                    "date": Date()
+                    "latest_message": "message"
+                    "is_read" : true / false
+                }
+            ]
+         ]
+     */
+    
     /// 새로운 채팅방을 만들기
     public func createNewConversation(with otherUserEmail: String, firstMessage: Message, completion: @escaping (Bool) -> Void) {
+        guard let currentEmail = UserDefaults.standard.value(forKey: "email") as? String else {
+            return
+        }
+        let safeEmail = DatabaseManager.safeEmail(emailAddress: currentEmail)
+        
+        let ref = database.child("\(safeEmail)")
+        
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            guard var userNode = snapshot.value as? [String : Any] else {
+                completion(false)
+                print("사용자를 찾지 못했습니다.")
+                return
+            }
+            // Date() 값
+            let messageDate = firstMessage.sentDate
+            let dateString = ChatViewController.dateFormatter.string(from: messageDate)
+            
+            var message = ""
+            
+            switch firstMessage.kind {
+            
+            case .text(let messageText):
+                message = messageText
+                
+            case .attributedText(_):
+                break
+            case .photo(_):
+                break
+            case .video(_):
+                break
+            case .location(_):
+                break
+            case .emoji(_):
+                break
+            case .audio(_):
+                break
+            case .contact(_):
+                break
+            case .linkPreview(_):
+                break
+            case .custom(_):
+                break
+            }
+            
+            let newConversationData : [String: Any] = [
+                "id" : "conversation_\(firstMessage.messageId)",
+                "other_user_email": otherUserEmail,
+                "latest_message" : [
+                    "date": dateString,
+                    "message": message,
+                    "is_read": false
+                ]
+            ]
+            
+            if var conversations = userNode["conversations"] as? [[String: Any]] {
+                // 최근 유저와의 채팅 배열이 존재함
+                conversations.append(newConversationData)
+                userNode["conversations"] = conversations
+                
+                ref.setValue(userNode, withCompletionBlock: { error, _ in
+                    guard error == nil else {
+                        completion(false)
+                        return
+                    }
+                    completion(true)
+                })
+            } else {
+                // 같은 채팅방이 존재하지 않음
+                userNode["conversations"] = [
+                    newConversationData
+                ]
+                
+                ref.setValue(userNode, withCompletionBlock: { error, _ in
+                    guard error == nil else {
+                        completion(false)
+                        return
+                    }
+                    completion(true)
+                })
+            }
+            
+        })
         
     }
     

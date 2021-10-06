@@ -10,16 +10,16 @@ import MessageKit
 import InputBarAccessoryView
 
 struct Message: MessageType {
-    var sender: SenderType   // 발신자
-    var messageId: String   // 중복 제거를 위한 시벽자
-    var sentDate: Date      // 보낸 날짜
-    var kind: MessageKind    // 사진, 이모지, 음성메세지 등등 여러타입 존재
+   public var sender: SenderType   // 발신자
+   public var messageId: String   // 중복 제거를 위한 시벽자
+   public var sentDate: Date      // 보낸 날짜
+   public var kind: MessageKind    // 사진, 이모지, 음성메세지 등등 여러타입 존재
 }
 
 struct Sender: SenderType {
-    var photoURL : String
-    var senderId: String
-    var displayName: String
+   public var photoURL : String
+   public var senderId: String
+   public var displayName: String
 }
 
 class ChatViewController: MessagesViewController {
@@ -79,6 +79,7 @@ extension ChatViewController : InputBarAccessoryViewDelegate {
             return
             
         }
+        // text → 유저가 친 메세지
         
         print("sending: \(text)")
         

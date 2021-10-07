@@ -118,7 +118,7 @@ extension ChatViewController : InputBarAccessoryViewDelegate {
                                   messageId: messageId,
                                  sentDate: Date(),
                                  kind: .text(text))
-            DatabaseManager.shared.createNewConversation(with: otherUserEmail, firstMessage: message, completion: { success in
+            DatabaseManager.shared.createNewConversation(with: otherUserEmail, name: self.title ?? "사용자", firstMessage: message, completion: { success in
                 if success {
                     print("메세지 보내기 성공!")
                 } else {

@@ -62,20 +62,49 @@ class ChatViewController: MessagesViewController {
     }()
     
     public let otherUserEmail : String
+    private let conversationId : String?
     public var isNewConversation = false
     
     private var messages = [Message]()
     
     private var selfSender : Sender? {
-        guard let email = UserDefaults.standard.value(forKey: "email") as? String else { return nil }
+        guard let email = UserDefaults.standard.value(forKey: "email") as? String else {
+            return nil
+        }
+        let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
+        
         return Sender(photoURL: "",
-               senderId: email,
-               displayName: "지석이")
+                      senderId: safeEmail,
+                      displayName: "나")
     }
     
-    init(with email: String) {
+    init(with email: String, id: String?) {
         self.otherUserEmail = email
+        self.conversationId = id
         super.init(nibName: nil, bundle: nil)
+        if let conversationId = conversationId {
+            listenForMessage(id: conversationId)
+        }
+    }
+    
+    private func listenForMessage(id: String) {
+        DatabaseManager.shared.getAllMessagesForConversation(with: id, completion: { [weak self] result in
+            switch result {
+            case .success(let messages):
+                guard !messages.isEmpty else {
+                    return
+                }
+                self?.messages = messages
+                
+                DispatchQueue.main.async {
+                    self?.messagesCollectionView.reloadDataAndKeepOffset()
+                }
+                
+            case .failure(let error):
+                print("메세지를 가져오는데 실패하였습니다.")
+                print("오류 내역 → \(error)")
+            }
+        })
     }
     
     required init?(coder: NSCoder) {
@@ -157,8 +186,6 @@ extension ChatViewController : MessagesDataSource, MessagesLayoutDelegate, Messa
             return sender
         }
         fatalError("Self Sender이 nil 값입니다.")
-        // 아래 Sender은 더미 데이터
-        return Sender(photoURL: "", senderId: "", displayName: "")
     }
     
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {

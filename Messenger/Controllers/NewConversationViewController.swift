@@ -15,6 +15,7 @@ class NewConversationViewController: UIViewController {
     private let spinner = JGProgressHUD(style: .dark)
     
     private var users = [[String: String]]()
+    
     private var results = [[String: String]]()
     // Firebase 결과 비어있는지 안비어있는지 체크 변수
     private var hasFetched = false

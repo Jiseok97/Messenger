@@ -111,6 +111,7 @@ class ChatViewController: MessagesViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    //MARK: View Did Load
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -128,6 +129,8 @@ class ChatViewController: MessagesViewController {
     }
 }
 
+
+// MARK: Extension InputBarAccessory
 extension ChatViewController : InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         guard !text.replacingOccurrences(of: " ", with: "").isEmpty,
@@ -138,7 +141,7 @@ extension ChatViewController : InputBarAccessoryViewDelegate {
         }
         // text → 유저가 친 메세지
         
-        print("sending: \(text)")
+        print("문자: \(text)")
         
         // 메세지 보내기
         if isNewConversation {
@@ -163,6 +166,9 @@ extension ChatViewController : InputBarAccessoryViewDelegate {
     
     private func createMessageId() -> String? {
         // date, otherUserEmail, senderEmail, randomInt
+        
+        // guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") else { return nil }
+        
         guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String else {
             return ""
         }
@@ -171,7 +177,7 @@ extension ChatViewController : InputBarAccessoryViewDelegate {
         
         let dateString = Self.dateFormatter.string(from: Date())
         let newIdentifier = "\(otherUserEmail)_\(safeCurrentEmail)_\(dateString)"
-        print("메세지 ID: \(newIdentifier)")
+        print("만들어진 메세지 ID: \(newIdentifier)")
         
         return newIdentifier
     }
@@ -179,6 +185,7 @@ extension ChatViewController : InputBarAccessoryViewDelegate {
 }
 
 
+// MARK: Extension MessageKit
 extension ChatViewController : MessagesDataSource, MessagesLayoutDelegate, MessagesDisplayDelegate {
     // 발신자가 누구인지?
     func currentSender() -> SenderType {

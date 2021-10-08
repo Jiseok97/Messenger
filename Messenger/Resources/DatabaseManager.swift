@@ -135,7 +135,8 @@ extension DatabaseManager {
                 {
                     "id" : String,
                     "type" : text, photo, video,
-                    "content" : Date(),
+                    "content" : String,
+                    "date" : Date(),
                     "sender_email" : String,
                     "isRead" : true / false
                 }
@@ -144,7 +145,7 @@ extension DatabaseManager {
      
          conversation => [
             [
-                "conversation_id" : "UserId
+                "conversation_id" : "UserId"
                 "other_user__email":
                 "latest_message": => {
                     "date": Date()
@@ -164,15 +165,12 @@ extension DatabaseManager {
         
         let ref = database.child("\(safeEmail)")
         
-        ref.observeSingleEvent(of: .value, with: { snapshot in
+        ref.observeSingleEvent(of: .value, with: { [weak self] snapshot in
             guard var userNode = snapshot.value as? [String : Any] else {
                 completion(false)
                 print("사용자를 찾지 못했습니다.")
                 return
             }
-            // Date() 값
-            let messageDate = firstMessage.sentDate
-            let dateString = ChatViewController.dateFormatter.string(from: messageDate)
             
             var message = ""
             
@@ -201,6 +199,9 @@ extension DatabaseManager {
             }
             
             let conversationId = "conversation_\(firstMessage.messageId)"
+            // Date() 값
+            let messageDate = firstMessage.sentDate
+            let dateString = ChatViewController.dateFormatter.string(from: messageDate)
             
             let newConversationData : [String: Any] = [
                 "id" : conversationId,
@@ -213,6 +214,32 @@ extension DatabaseManager {
                 ]
             ]
             
+            let recipitent_newConversationData : [String: Any] = [
+                "id" : conversationId,
+                "other_user_email": otherUserEmail,
+                "name" : "Self",
+                "latest_message" : [
+                    "date": dateString,
+                    "message": message,
+                    "is_read": false
+                ]
+            ]
+            
+            // 수신자의 채팅 업데이트
+            self?.database.child("\(otherUserEmail)/conversation").observeSingleEvent(of: .value, with: { [weak self] snapshot in
+                if var conversations = snapshot.value as? [[String: Any]] {
+                    // append ( 대화가 있는 경우 )
+                    conversations.append(recipitent_newConversationData)
+                    self?.database.child("\(otherUserEmail)/conversation").setValue(conversationId)
+                    
+                } else {
+                    // create
+                    self?.database.child("\(otherUserEmail)/conversation").setValue([recipitent_newConversationData])
+                    
+                }
+            })
+        
+            // 최근 유저의 채팅을 업데이트
             if var conversations = userNode["conversations"] as? [[String: Any]] {
                 // 최근 유저와의 채팅 배열이 존재함
                 conversations.append(newConversationData)
@@ -223,6 +250,7 @@ extension DatabaseManager {
                         completion(false)
                         return
                     }
+                    
                     self?.finishCreatingConversation(name: name,
                                                    conversationID: conversationId,
                                                    firstMessage: firstMessage,
@@ -244,7 +272,7 @@ extension DatabaseManager {
                                                    conversationID: conversationId,
                                                    firstMessage: firstMessage,
                                                    completion: completion)
-                    completion(true)
+//                    completion(true)
                 })
             }
             

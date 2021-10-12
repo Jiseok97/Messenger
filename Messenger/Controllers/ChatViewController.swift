@@ -75,19 +75,16 @@ class ChatViewController: MessagesViewController {
         
         return Sender(photoURL: "",
                       senderId: safeEmail,
-                      displayName: "나")
+                      displayName: "Me")
     }
     
     init(with email: String, id: String?) {
         self.otherUserEmail = email
         self.conversationId = id
         super.init(nibName: nil, bundle: nil)
-        if let conversationId = conversationId {
-            listenForMessage(id: conversationId)
-        }
     }
     
-    private func listenForMessage(id: String) {
+    private func listenForMessage(id: String, shouldScrollToBottom: Bool) {
         DatabaseManager.shared.getAllMessagesForConversation(with: id, completion: { [weak self] result in
             switch result {
             case .success(let messages):
@@ -98,6 +95,10 @@ class ChatViewController: MessagesViewController {
                 
                 DispatchQueue.main.async {
                     self?.messagesCollectionView.reloadDataAndKeepOffset()
+                    if shouldScrollToBottom {
+                        // self?.messagesCollectionView.scrollToBottom()
+                        self?.messagesCollectionView.scrollToLastItem()
+                    }
                 }
                 
             case .failure(let error):
@@ -126,6 +127,10 @@ class ChatViewController: MessagesViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         messageInputBar.inputTextView.becomeFirstResponder()
+        
+        if let conversationId = conversationId {
+            listenForMessage(id: conversationId, shouldScrollToBottom: true)
+        }
     }
 }
 
@@ -143,16 +148,19 @@ extension ChatViewController : InputBarAccessoryViewDelegate {
         
         print("문자: \(text)")
         
+        let message = Message(sender: selfSender,
+                              messageId: messageId,
+                             sentDate: Date(),
+                             kind: .text(text))
+        
         // 메세지 보내기
         if isNewConversation {
             // DB에 새 채팅 만들기
-            let message = Message(sender: selfSender,
-                                  messageId: messageId,
-                                 sentDate: Date(),
-                                 kind: .text(text))
-            DatabaseManager.shared.createNewConversation(with: otherUserEmail, name: self.title ?? "사용자", firstMessage: message, completion: { success in
+
+            DatabaseManager.shared.createNewConversation(with: otherUserEmail, name: self.title ?? "사용자", firstMessage: message, completion: { [weak self] success in
                 if success {
                     print("메세지 보내기 성공!")
+                    self?.isNewConversation = false
                 } else {
                     print("메세지 보내기 실패!")
                 }
@@ -160,7 +168,13 @@ extension ChatViewController : InputBarAccessoryViewDelegate {
             
         } else {
             // 기존 대화 데이터 추가
-            
+            DatabaseManager.shared.sendMessage(to: otherUserEmail, message: message, completion: { success in
+                if success {
+                    print("메세지를 보냅니다. → ChatVC")
+                } else {
+                    print("메세지 보내기 실패하였습니다. → ChatVC")
+                }
+            })
         }
     }
     

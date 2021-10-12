@@ -59,8 +59,8 @@ class ConversationTableViewCell: UITableViewCell {
         
         userMessageLabel.frame = CGRect(x: userImageView.right + 10,
                                         y: userNameLabel.bottom + 5,
-                                     width: contentView.width - 20 - userImageView.width,
-                                     height: (contentView.height - 20) / 2)
+                                        width: contentView.width - 20 - userImageView.width,
+                                        height: (contentView.height - 20) / 2)
     }
     
     public func configure(with model: Conversation) {

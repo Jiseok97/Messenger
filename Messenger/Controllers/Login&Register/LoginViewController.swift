@@ -204,6 +204,7 @@ class LoginViewController: UIViewController {
                   let fullName = user.profile?.name else { return }
             
             UserDefaults.standard.set(googleEmail, forKey: "email")
+            UserDefaults.standard.set(fullName, forKey: "name")
             
             DatabaseManager.shared.userExists(with: googleEmail, completion: { exists in
                 if !exists {
@@ -295,6 +296,23 @@ class LoginViewController: UIViewController {
             }
             // 로그인 성공
             let user = result.user
+            
+            let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
+            DatabaseManager.shared.getDataFor(path: safeEmail, completion: { result in
+                switch result {
+                case .success(let data):
+                    guard let userData = data as? [String: Any],
+                          let firstName = userData["first_name"] as? String,
+                          let lastName = userData["last_name"] as? String else {
+                        return
+                    }
+                    UserDefaults.standard.set("\(firstName) \(lastName)", forKey: "name")
+                            
+                case .failure(let error):
+                    print("데이터를 읽는데 실패하였습니다. → LoginVC \(error)")
+                }
+            })
+            
             UserDefaults.standard.set(email, forKey: "email")
             
             print("로그인 성공: \(user)")
@@ -342,6 +360,7 @@ extension LoginViewController : UITextFieldDelegate {
 
 // MARK: 페이스북 로그인 기능 & 사진
 extension LoginViewController : LoginButtonDelegate {
+    
     func loginButton(_ loginButton: FBLoginButton, didCompleteWith result: LoginManagerLoginResult?, error: Error?) {
         // LoginManagerLoginResult 반환은 클래스반환, 토큰 반환
         guard let token = result?.token?.tokenString else {
@@ -376,7 +395,9 @@ extension LoginViewController : LoginButtonDelegate {
                 
                 return
             }
+            
             UserDefaults.standard.set(email, forKey: "email")
+            UserDefaults.standard.set(fullName, forKey: "name")
             
             // 같은 이름 및 이메일이 존재하지 않으면 DB에 유저 정보 넣어주기 ! (중복 검사)
             // MARK: 페이스북 이미지 업로드(URL)

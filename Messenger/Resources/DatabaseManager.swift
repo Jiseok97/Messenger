@@ -111,18 +111,20 @@ extension DatabaseManager {
     }
 }
 
-/*
- users => [
-    [
-        "name":
-        "safe_email":
-    ],
-    [
-        "name":
-        "safe_email":
-    ]
- ]
- */
+extension DatabaseManager {
+    
+    public func getDataFor(path: String, completion: @escaping (Result<Any, Error>) -> Void) {
+        self.database.child("\(path)").observeSingleEvent(of: .value) { snapshot in
+            guard let value = snapshot.value else {
+                completion(.failure(DatabaseError.failedToFetch))
+                return
+            }
+            
+            completion(.success(value))
+        }
+    }
+    
+}
 
 // MARK: - 보내는 메세지 / 채팅
 extension DatabaseManager {
@@ -158,7 +160,8 @@ extension DatabaseManager {
     
     /// 새로운 채팅방을 만들기
     public func createNewConversation(with otherUserEmail: String, name: String, firstMessage: Message, completion: @escaping (Bool) -> Void) {
-        guard let currentEmail = UserDefaults.standard.value(forKey: "email") as? String else {
+        guard let currentEmail = UserDefaults.standard.value(forKey: "email") as? String,
+              let currentName = UserDefaults.standard.value(forKey: "name") as? String else {
             return
         }
         let safeEmail = DatabaseManager.safeEmail(emailAddress: currentEmail)
@@ -217,7 +220,7 @@ extension DatabaseManager {
             let recipitent_newConversationData : [String: Any] = [
                 "id" : conversationId,
                 "other_user_email": otherUserEmail,
-                "name" : "Self",
+                "name" : currentName,
                 "latest_message" : [
                     "date": dateString,
                     "message": message,
@@ -366,7 +369,7 @@ extension DatabaseManager {
                       let date = latestMessage["date"] as? String,
                       let message = latestMessage["message"] as? String,
                       let isRead = latestMessage["is_read"] as? Bool else {
-                    return nil
+                        return nil
                 }
                 
                 let latestMessageObject = LatestMessage(date: date,
@@ -398,6 +401,7 @@ extension DatabaseManager {
                       let messageID = dictionary["id"] as? String,
                       let content = dictionary["content"] as? String,
                       let senderEmail = dictionary["sender_email"] as? String,
+                      let type = dictionary["type"] as? String,
                       let dateString = dictionary["date"] as? String,
                       let date = ChatViewController.dateFormatter.date(from: dateString) else {
                         return nil

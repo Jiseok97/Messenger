@@ -167,8 +167,11 @@ extension ChatViewController : InputBarAccessoryViewDelegate {
             })
             
         } else {
+            guard let conversationId = conversationId, let name = self.title else {
+                return
+            }
             // 기존 대화 데이터 추가
-            DatabaseManager.shared.sendMessage(to: otherUserEmail, message: message, completion: { success in
+            DatabaseManager.shared.sendMessage(to: conversationId, name: name, newMessage: message, completion: { success in
                 if success {
                     print("메세지를 보냅니다. → ChatVC")
                 } else {
